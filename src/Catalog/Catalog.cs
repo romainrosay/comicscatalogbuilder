@@ -179,6 +179,15 @@ namespace ComicsCatalog
             }
         }
 
+        private void ClearTmpFiles() {
+            foreach (var entry in entries)
+            {
+                //Comic
+                if (entry.GetImage() != null) File.Delete(entry.GetImage());
+            }
+
+        }
+
         private string GetDirectoryNameFromPath(string dir) {
             return $"{dir.Substring(dir.LastIndexOf(Path.DirectorySeparatorChar) + 1)}";
         }
