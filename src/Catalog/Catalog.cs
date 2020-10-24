@@ -51,7 +51,7 @@ namespace ComicsCatalog
                 SendNewStatus(new NewStatusEventArgs("Catalog building started"));
 
                 entries = new List<IEntry>();               
-                ParseDirectory(rootPath, "-");
+                ParseDirectory(rootPath);
                 CreatePages();
 
                 SendNewStatus(new NewStatusEventArgs("Catalog building ended"));
@@ -62,20 +62,15 @@ namespace ComicsCatalog
             }
         }
 
-        private void ParseDirectory(string dirPath, string prefix) { 
+        private void ParseDirectory(string dirPath) { 
             if (!Directory.Exists(dirPath)) SendNewStatus(new NewStatusEventArgs("Skipping " + dirPath));
             List<string> dirs = new List<string>(Directory.EnumerateDirectories(dirPath));
             if (dirs.Count > 0)
             {
-                /*if (dirPath != currentRootPath)
-                {
-                    Separator separator = new Separator(GetDirectoryNameFromPath(dirPath));
-                    entries.Add(separator);
-                }*/
                 foreach (var dir in dirs)
                 {
-                    SendNewStatus(new NewStatusEventArgs(prefix + " " + GetDirectoryNameFromPath(dir)));
-                    ParseDirectory(dir, prefix + "-");
+                    SendNewStatus(new NewStatusEventArgs("Processing " + GetDirectoryNameFromPath(dir)));
+                    ParseDirectory(dir);
                 }
             }
             else {
@@ -90,7 +85,6 @@ namespace ComicsCatalog
                 var foundComics = Directory
                     .EnumerateFiles(path, "*.*", SearchOption.AllDirectories)
                     .Where(s => ext.Contains(Path.GetExtension(s).TrimStart('.').ToLowerInvariant()));
-                SendNewStatus(new NewStatusEventArgs(entries.Count() + " comic(s) found"));
                 //Initialising comic
                 Comic firstComic = new Comic(foundComics.First());
                 entries.Add(firstComic);

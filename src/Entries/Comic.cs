@@ -27,6 +27,7 @@ namespace ComicsCatalog
             string folder = Path.GetDirectoryName(filePath);
             folder = Path.GetDirectoryName(folder);
             string toRemove = Catalog.currentRootPath;
+            if (folder == Catalog.currentRootPath) return null;
             if (!toRemove.EndsWith("\\")) toRemove += "\\";
             string result = folder.Replace(toRemove, "").Replace("\\", " | ");
             return result;

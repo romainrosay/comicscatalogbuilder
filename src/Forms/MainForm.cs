@@ -11,9 +11,9 @@ using System.Windows.Forms;
 
 namespace ComicsCatalogWin
 {
-    public partial class Form1 : Form
+    public partial class MainForm : Form
     {
-        public Form1()
+        public MainForm()
         {
             InitializeComponent();
             txtInput.Text = Properties.Settings.Default.inputFolder;
@@ -29,33 +29,50 @@ namespace ComicsCatalogWin
                     MessageBox.Show("Please fill input and outpout fields !");
                     return;
                 }
-                btnGenerate.Enabled = false;
-                btnInput.Enabled = false;
-                btnOutput.Enabled = false;
-                txtInput.Enabled = false;
-                txtOutput.Enabled = false;
-                Catalog catalog = new Catalog();
-                catalog.BuildCatalog(txtInput.Text, txtOutput.Text);
-                catalog.NewStatusSent += Catalog_NewStatusSent;
-                MessageBox.Show("Catalog created successfully");
+
+                lockInterface();
+                Task.Run(() => GenerateCatalog(txtInput.Text, txtOutput.Text));
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
             finally {
-                btnGenerate.Enabled = true;
-                btnInput.Enabled = true;
-                btnOutput.Enabled = true;
-                txtInput.Enabled = true;
-                txtOutput.Enabled = true;
             }
+        }
+
+        private void GenerateCatalog(string input, string output) {
+            Catalog catalog = new Catalog();
+            catalog.NewStatusSent += Catalog_NewStatusSent;
+            catalog.BuildCatalog(input, output);
+            MessageBox.Show("Catalog created successfully");
+            if (InvokeRequired) Invoke(new MethodInvoker(unlockInterface));
+            else unlockInterface();
+        }
+
+        private void lockInterface() {
+            btnGenerate.Enabled = false;
+            btnInput.Enabled = false;
+            btnOutput.Enabled = false;
+            txtInput.Enabled = false;
+            txtOutput.Enabled = false;
+        }
+
+        private void unlockInterface()
+        {
+            btnGenerate.Text = "Generate";
+            btnGenerate.Enabled = true;
+            btnInput.Enabled = true;
+            btnOutput.Enabled = true;
+            txtInput.Enabled = true;
+            txtOutput.Enabled = true;
         }
 
         private void Catalog_NewStatusSent(object sender, NewStatusEventArgs e)
         {
-            toolStripStatusLabel1.Text = e.Message;
-            Application.DoEvents();
+            Invoke(new MethodInvoker(()=> {
+                btnGenerate.Text = e.Message;
+            }));
         }
 
         private void btnInput_Click(object sender, EventArgs e)
@@ -82,5 +99,6 @@ namespace ComicsCatalogWin
                 Properties.Settings.Default.Save();
             }
         }
+
     }
 }

@@ -14,10 +14,22 @@ namespace ComicsCatalog
         {
             using (var archive = ArchiveFactory.Open(filePath))
             {
-                var pages = archive.Entries.Where(s => ext.Contains(Path.GetExtension(s.Key).TrimStart('.').ToLowerInvariant()));
-                var tmpFile = Path.GetTempFileName();
-                pages.ElementAt(Math.Min(pageNumber, pages.Count())).WriteToFile(tmpFile);
-                return tmpFile;
+                var orderedEntries =
+                    from entry in archive.Entries
+                    orderby entry.Key
+                    select entry;
+                
+                int cpt = 0;
+                foreach (var page in orderedEntries) {
+                    if (Path.GetExtension(page.Key).ToLower() != ".jpg" && Path.GetExtension(page.Key).ToLower() != ".png") continue;
+                    if (cpt == 0 || orderedEntries.Last() == page) {
+                        var tmpFile = Path.GetTempFileName();
+                        page.WriteToFile(tmpFile);
+                        return tmpFile;
+                    }
+                    cpt++;
+                }
+                return null;
             }
         }
     }
